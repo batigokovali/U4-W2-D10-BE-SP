@@ -6,6 +6,7 @@ import { checkMediasSchema, triggerBadRequest } from "./validation.js";
 import { getMedias, writeMedias } from "../../lib/fs-tools.js";
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
+import { asyncPDFGeneration } from "../../lib/pdf-tools.js";
 
 const mediasRouter = Express.Router()
 
@@ -76,6 +77,20 @@ mediasRouter.post("/:mediaID/poster", cloudinaryUploader, async (req, res, next)
     }
 })
 
-
+mediasRouter.get("/:mediaID/pdf", async (req, res, next) => {
+    try {
+        const medias = await getMedias()
+        const filteredMedia = medias.find(media => media.imdbID === req.params.mediaID)
+        if (filteredMedia) {
+            console.log(filteredMedia)
+            await asyncPDFGeneration(filteredMedia)
+            res.send({ message: "PDF generated!" })
+        } else {
+            next(createHttpError(404, `Media with id ${req.params.mediaID} not found!`))
+        }
+    } catch (error) {
+        next(error)
+    }
+})
 
 export default mediasRouter

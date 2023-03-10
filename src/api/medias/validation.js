@@ -10,13 +10,13 @@ const mediasSchema = {
     },
     year: {
         in: ["body"],
-        isNumerical: {
+        isNumeric: {
             errorMessage: "Year is a mandatory field and needs to be a number!"
         }
     },
     imdbID: {
         in: ["body"],
-        isNumerical: {
+        isNumeric: {
             errorMessage: "ImdbID is a mandatory field and needs to be a string!"
         }
     },
