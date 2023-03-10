@@ -7,6 +7,8 @@ import { getMedias, writeMedias } from "../../lib/fs-tools.js";
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { asyncPDFGeneration } from "../../lib/pdf-tools.js";
+import { getMediasPDFReadableStream } from "../../lib/pdf-tools.js";
+import { pipeline } from "stream";
 
 const mediasRouter = Express.Router()
 
@@ -83,9 +85,12 @@ mediasRouter.get("/:mediaID/pdf", async (req, res, next) => {
         const medias = await getMedias()
         const filteredMedia = medias.find(media => media.imdbID === req.params.mediaID)
         if (filteredMedia) {
-            await asyncPDFGeneration(filteredMedia)
-            res.setHeader("Content-Disposition", `attachment; filename=${req.params.mediaID}.pdf`)
-            res.send({ message: "PDF generated!" })
+            res.setHeader("Content-Disposition", `attachment; filename=${filteredMedia.imdbID}.pdf`);
+            const source = await getMediasPDFReadableStream(filteredMedia)
+            const destination = res;
+            pipeline(source, destination, (err) => {
+                console.log(err)
+            })
         } else {
             next(createHttpError(404, `Media with id ${req.params.mediaID} not found!`))
         }
