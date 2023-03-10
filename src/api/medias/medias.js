@@ -35,10 +35,11 @@ mediasRouter.get("/", async (req, res, next) => {
     try {
         const medias = await getMedias()
         if (req.query && req.query.title) {
-            const filteredMedias = medias.filter(media => media.title === req.query.title)
+            const filteredMedias = medias.filter(media => media.title.toLowerCase().includes(req.query.title.toLowerCase()))
             res.send(filteredMedias)
+        } else {
+            res.send(medias)
         }
-        res.send(medias)
     } catch (error) {
         next(error)
     }
@@ -82,8 +83,8 @@ mediasRouter.get("/:mediaID/pdf", async (req, res, next) => {
         const medias = await getMedias()
         const filteredMedia = medias.find(media => media.imdbID === req.params.mediaID)
         if (filteredMedia) {
-            console.log(filteredMedia)
             await asyncPDFGeneration(filteredMedia)
+            res.setHeader("Content-Disposition", `attachment; filename=${req.params.mediaID}.pdf`)
             res.send({ message: "PDF generated!" })
         } else {
             next(createHttpError(404, `Media with id ${req.params.mediaID} not found!`))

@@ -16,7 +16,7 @@ const mediasSchema = {
     },
     imdbID: {
         in: ["body"],
-        isNumeric: {
+        isString: {
             errorMessage: "ImdbID is a mandatory field and needs to be a string!"
         }
     },
